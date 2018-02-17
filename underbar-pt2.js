@@ -19,14 +19,31 @@ const { each } = require('./underbar-pt1');
 //     bla: "even more stuff"
 //   }); // obj1 now contains key1, key2, key3 and bla
 const extend = function(obj) {
-  // Your code here
   // Hint: remember that Array.from can convert an array-like object to handy-dandy array for you.
+  //一番目のオブジェクトを除いたそれ以降の引数を、Callbackで処理する
+  each(Array.from(arguments).slice(1), function(object) {
+    //オブジェクトのプロパティをを順に拡張したいオブジェクトに追加する
+    for (var key in object) {
+      obj[key] = object[key];
+    }
+  });
+  return obj;
 };
 
 // Like extend, but doesn't ever overwrite a key that already
 // exists in obj
 const defaults = function(obj) {
   // Your code here
+  each(Array.from(arguments).slice(1), function(object) {
+    //オブジェクトのプロパティをを順に拡張したいオブジェクトに追加する
+    for (var key in object) { //for以外でかけそう.思考の入れ替えとunderbar系をなじませるトレーニングが必要
+      //objのkeyに値がないときは新たに追加する
+      if(obj[key] === undefined) { //うつくしくない
+        obj[key] = object[key];
+      }
+    }
+  });
+  return obj;
 };
 
 
@@ -42,6 +59,19 @@ const defaults = function(obj) {
 // should return the previously returned value.
 const once = function(func) {
   // Hint: you're going to need to return another function that you create inside this function.
+  //既に呼ばれたか
+  let hasCalled = false;
+  let result; 
+  //関数を返す
+  return function() {
+    if(!hasCalled) {
+      //呼ばれていないなら関数を返す
+      result =  func.apply(this, arguments); //retultになっていなた
+      hasCalled = true;
+    }
+    //既に呼ばれているときは何を返そう=>前に返したものと同じもの
+    return result;
+  };
 };
 
 // Memorize an expensive function's results by storing them. You may assume
@@ -52,9 +82,18 @@ const once = function(func) {
 // _.memoize should return a function that, when called, will check if it has
 // already computed the result for the given argument and return that value
 // instead if possible.
+// どういうこと?
 const memoize = function(func) {
   // Hint: look up Function.apply
   // Your code here
+  let cache = {};
+  return function() {
+    var args = JSON.stringify(arguments);
+    if(!cache[args]) { //このへんの書き方、 nullやundefinedにあたりに弱い
+      cache[args] = func.apply(func, arguments);
+    }
+    return cache[args];
+  };
 };
 
 // Delays a function for the given number of milliseconds, and then calls
@@ -66,6 +105,14 @@ const memoize = function(func) {
 const delay = function(func, wait) {
   // Hint: delay things with the global function setTimeout()
   // Hint: look up Function.apply
+  //const args = arguments.slice(2);
+  const args = Array.prototype.slice.call(arguments, 2);
+  //funcのプロト？をつくる(apply, call)
+  //2(1)番目の引数waitで遅延時間を設定(setTimeout)
+  setTimeout(function() {
+    return func.apply(null, args);
+  }, wait);
+  //スライスした後ろの引数をつかって関数を呼ぶ
 };
 
 // Randomizes the order of an array's contents.
@@ -76,6 +123,19 @@ const delay = function(func, wait) {
 const shuffle = function(arr) {
   // Hint: See http://bost.ocks.org/mike/shuffle/ for an in-depth explanation of the
   // Fisher-Yates Shuffle
+  //配列のコピーをつくる
+  let array = arr.slice();
+  let arrayLength = array.length; //とってこれる？AutoCompleteが弱いのでわかりにくい
+  let temp, swapIndex;
+  //入れ替えのロジック
+  for (var i = 0; i < arrayLength; i++ ) {
+    swapIndex = Math.floor(Math.random() * i);
+    temp = array[i];
+    array[i] = array[swapIndex];
+    array[swapIndex] = temp;
+  }
+  //要素の回数だけ,idxの要素を任意の要素と入れ替える(情報工学的に覚えているが証明可能？)
+  return array;
 };
 
 module.exports = {
