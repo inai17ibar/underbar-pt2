@@ -23,9 +23,9 @@ const extend = function(obj) {
   //一番目のオブジェクトを除いたそれ以降の引数を、Callbackで処理する
   each(Array.from(arguments).slice(1), function(object) {
     //オブジェクトのプロパティをを順に拡張したいオブジェクトに追加する
-    for (var key in object) {
-      obj[key] = object[key];
-    }
+    each (object, function(value, key) {
+      obj[key] = value;
+    });
   });
   return obj;
 };
@@ -36,16 +36,12 @@ const defaults = function(obj) {
   // Your code here
   each(Array.from(arguments).slice(1), function(object) {
     //オブジェクトのプロパティをを順に拡張したいオブジェクトに追加する
-    for (var key in object) { //for以外でかけそう.思考の入れ替えとunderbar系をなじませるトレーニングが必要
-      //objのkeyに値がないときは新たに追加する
-      if(obj[key] === undefined) { //うつくしくない
-        obj[key] = object[key];
-      }
-    }
+    each (object, function(value, key) {
+      (obj[key] === undefined) && (obj[key] = value);
+    });
   });
   return obj;
 };
-
 
 /**
  * FUNCTIONS
@@ -66,7 +62,7 @@ const once = function(func) {
   return function() {
     if(!hasCalled) {
       //呼ばれていないなら関数を返す
-      result =  func.apply(this, arguments); //retultになっていなた
+      result =  func.apply(this, arguments); //retultになっていた->eslintを導入
       hasCalled = true;
     }
     //既に呼ばれているときは何を返そう=>前に返したものと同じもの
@@ -107,7 +103,7 @@ const delay = function(func, wait) {
   // Hint: look up Function.apply
   //const args = arguments.slice(2);
   const args = Array.prototype.slice.call(arguments, 2);
-  //funcのプロト？をつくる(apply, call)
+  //funcをよぶ(apply, call)
   //2(1)番目の引数waitで遅延時間を設定(setTimeout)
   setTimeout(function() {
     return func.apply(null, args);
